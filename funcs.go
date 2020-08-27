@@ -3,10 +3,12 @@ package toolkit
 // 通用方法
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"time"
 )
 
@@ -68,4 +70,36 @@ func GetRemoteFile(url string) (string, error) {
 	buf.ReadFrom(resp.Body)
 
 	return buf.String(), nil
+}
+
+// @title 获得远程连接的内容
+// @param url string 远程地址
+// @return io.Reader
+func GetRemoteFileReader(url string) (io.Reader, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Body, nil
+}
+
+// @title PregReplace
+// @description 用正则替换部分内容
+
+func PregReplace(content, exp, repl string) string {
+	reg, err := regexp.Compile(exp)
+	if err != nil {
+		return ""
+	}
+
+	rs := reg.ReplaceAllString(content, repl)
+	return rs
 }
